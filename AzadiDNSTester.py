@@ -86,7 +86,7 @@ def write_header(test_domain, include_firewall=False):
             with open(filepath, 'w') as f:
                 f.write(f"# working dns servers - tested: {timestamp}\n")
                 f.write(f"# test domain: {test_domain}\n")
-                f.write(f"# mode: {filter_mode} - 10.10.34.34, 10.10.34.35, 10.10.34.36\n")
+                f.write(f"# mode: {filter_mode}\n")
                 f.write("# format: ip (response_time_ms) [firewall: fw_ip]\n")
             print("header written to working_dns.txt")
         except Exception as e:
@@ -317,4 +317,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
