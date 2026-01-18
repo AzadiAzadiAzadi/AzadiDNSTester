@@ -463,22 +463,23 @@ response_time=$((end_time - start_time))
 
 if [[ $status -eq 0 && -n "$resolved_ip" ]]; then
     echo "$server (${response_time}ms)" >> "$output_file"
-    # Print green success message immediately
-    printf "\r\033[K\033[0;32m✅ %s OK %sms (%s)\033[0m\n" "$server" "$response_time" "$resolved_ip" >&2
+    # Print to stderr for real-time display (green)
+    echo -e "\033[32m[OK]\033[0m $server (${response_time}ms) -> $resolved_ip" >&2
     echo "OK|$server|$response_time|$resolved_ip"
 else
-    # Print red failure message immediately
-    printf "\r\033[K\033[0;31m❌ %s FAIL (%sms)\033[0m\n" "$server" "$response_time" >&2
+    # Print to stderr for real-time display (red)
+    echo -e "\033[31m[FAIL]\033[0m $server" >&2
     echo "FAIL|$server|$response_time"
 fi
 WORKERSCRIPT
     chmod +x "$worker_script"
     
-    # Start progress monitor in background (prints to stderr to not interfere with results)
+    # Start progress monitor in background (writes to stderr)
     (
+        prev_count=0
         while true; do
             if [[ -f "$temp_results" ]]; then
-                done_count=$(cat "$temp_results" 2>/dev/null | wc -l | tr -d ' ')
+                done_count=$(wc -l < "$temp_results" 2>/dev/null | tr -d ' ' || echo 0)
                 done_count=${done_count:-0}
                 working=$(grep -c "^OK|" "$temp_results" 2>/dev/null || echo 0)
                 working=${working:-0}
@@ -487,30 +488,34 @@ WORKERSCRIPT
                 else
                     pct=0
                 fi
-                printf "\rProgress: %s/%s (%s%%) | Working: %s   " \
-                    "$done_count" "$total_servers" "$pct" "$working" >&2
+                # Print progress update every 5 seconds
+                if [[ "$done_count" -ge "$((prev_count + 50))" ]] || \
+                   [[ "$done_count" == "$total_servers" && "$prev_count" != "$done_count" ]]; then
+                    echo "--- Progress: $done_count/$total_servers ($pct%) | Working: $working ---" >&2
+                    prev_count=$done_count
+                fi
             fi
-            sleep 0.5
+            sleep 1
         done
     ) &
     local monitor_pid=$!
     
     # Run DNS tests in parallel using xargs
-    cat "$servers_file" | xargs -P "$workers" -I{} "$worker_script" "{}" "$domain" "$timeout" "$dns_tool" "$OUTPUT_FILE" >> "$temp_results" 2>/dev/null
+    cat "$servers_file" | xargs -P "$workers" -I{} "$worker_script" "{}" "$domain" "$timeout" "$dns_tool" "$OUTPUT_FILE" >> "$temp_results"
     
     # Stop progress monitor
     kill $monitor_pid 2>/dev/null
     wait $monitor_pid 2>/dev/null
     
-    # Final progress
+    # Final summary
     local final_count
-    final_count=$(cat "$temp_results" 2>/dev/null | wc -l | tr -d ' ')
+    final_count=$(wc -l < "$temp_results" 2>/dev/null | tr -d ' ' || echo 0)
     final_count=${final_count:-0}
     local final_working
     final_working=$(grep -c "^OK|" "$temp_results" 2>/dev/null || echo 0)
     final_working=${final_working:-0}
-    printf "\rProgress: %s/%s (100%%) | Working: %s   \n" \
-        "$final_count" "$total_servers" "$final_working" >&2
+    echo ""
+    echo "=== Completed: $final_count/$total_servers | Working: $final_working ==="
     
     rm -f "$servers_file" "$worker_script"
     
