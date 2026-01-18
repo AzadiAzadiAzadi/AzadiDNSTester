@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 """
+Azadi DNS Tester
 requires: pip install dnspython tqdm
 """
 
@@ -316,3 +317,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
