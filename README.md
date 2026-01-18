@@ -1,0 +1,2 @@
+# AzadiDNSTester
+Azadi DNS Tester
