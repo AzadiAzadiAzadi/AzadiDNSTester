@@ -45,7 +45,7 @@ def load_servers(filename='dns_servers.txt'):
     """load all ipv4 addresses from file"""
     filepath = os.path.join(get_script_dir(), filename)
     try:
-        with open(filepath, 'r') as f:
+        with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
             content = f.read()
         
         ip_pattern = re.compile(
@@ -316,4 +316,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
