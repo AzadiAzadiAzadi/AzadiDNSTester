@@ -78,7 +78,7 @@ def write_header(test_domain, include_firewall=False):
     """write header to working_dns.txt once before testing"""
     filepath = os.path.join(get_script_dir(), 'working_dns.txt')
     timestamp = datetime.now().strftime("%y-%m-%d %H:%M:%S")
-    filter_mode = "include firewall" if include_firewall else "firewall filtered"
+    filter_mode = "including all responses" if include_firewall else "filtering firewall responses"
     
     with file_lock:
         try:
@@ -316,5 +316,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
