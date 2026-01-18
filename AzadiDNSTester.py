@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
 
 """
-tests dns servers from dns_servers.txt and saves working ones to working_dns.txt
-supports any input format - extracts all ipv4 addresses automatically
-filters firewall responses: 10.10.34.34, 10.10.34.35, 10.10.34.36 (user choice)
 requires: pip install dnspython tqdm
 """
 
@@ -319,3 +316,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
