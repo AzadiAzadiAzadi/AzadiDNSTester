@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 """
-Azadi DNS Tester
 requires: pip install dnspython tqdm
 """
 
@@ -86,7 +85,7 @@ def write_header(test_domain, include_firewall=False):
             with open(filepath, 'w') as f:
                 f.write(f"# working dns servers - tested: {timestamp}\n")
                 f.write(f"# test domain: {test_domain}\n")
-                f.write(f"# mode: {filter_mode}\n")
+                f.write(f"# mode: {filter_mode} - 10.10.34.34, 10.10.34.35, 10.10.34.36\n")
                 f.write("# format: ip (response_time_ms) [firewall: fw_ip]\n")
             print("header written to working_dns.txt")
         except Exception as e:
@@ -211,7 +210,7 @@ def test_single_server(server, domain, timeout=3, include_firewall=False):
             else:
                 return False, (server, response_time), f"{server} firewall blocked ({first_fw})"
         
-        server_info = f"{server} ({response_time:.0f}ms)"
+        server_info = f"{server} ({first_fw}) ({response_time:.0f}ms)"
         real_time_save(server_info)
         return True, (server, response_time), f"{server} ok {response_time:.0f}ms ({first_ip})"
         
@@ -317,5 +316,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
